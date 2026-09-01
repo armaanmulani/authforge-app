@@ -3,5 +3,3 @@ spring:
     name: auth-app-backend
 server:
   port: 8082
-profiles:
-  active: dev
