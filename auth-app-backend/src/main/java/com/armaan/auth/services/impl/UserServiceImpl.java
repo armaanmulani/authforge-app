@@ -1,10 +1,11 @@
-package com.armaan.auth.services;
+package com.armaan.auth.services.impl;
 
 import com.armaan.auth.dtos.UserDto;
 import com.armaan.auth.exceptions.ResourceNotFound;
 import com.armaan.auth.models.Provider;
 import com.armaan.auth.models.User;
 import com.armaan.auth.repositories.UserRepository;
+import com.armaan.auth.services.UserService;
 import com.armaan.auth.utils.UserUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
