@@ -30,7 +30,7 @@ public class User {
 
     private String password;
     private String image;
-    private boolean isEnabled = true;
+    private Boolean isEnabled = true;
     private Instant createdAt = Instant.now();
     private Instant updatedAt = Instant.now();
 
@@ -42,6 +42,7 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
+
     private Set<Role> roles = new HashSet<>();
 
     @PrePersist
