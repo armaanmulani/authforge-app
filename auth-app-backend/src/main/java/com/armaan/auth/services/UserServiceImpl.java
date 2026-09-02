@@ -5,10 +5,13 @@ import com.armaan.auth.exceptions.ResourceNotFound;
 import com.armaan.auth.models.Provider;
 import com.armaan.auth.models.User;
 import com.armaan.auth.repositories.UserRepository;
+import com.armaan.auth.utils.UserUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -40,17 +43,24 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto updateUser(UserDto userDto, String userId) {
+        UUID uId = UserUtil.pasrseUUID(userId);
+        User existingUser = userRepository.findById(uId).orElseThrow(() -> new ResourceNotFound("User not found with the given id"));
+
         return null;
     }
 
     @Override
-    public void deleteUserById(String userId) {
-
+    public void deleteUserById(String uuid) {
+        UUID userId = UserUtil.pasrseUUID(uuid);
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFound("User does not exist with given id"));
+        userRepository.delete(user);
     }
 
     @Override
     public UserDto getUserById(String userId) {
-        return null;
+        User user = userRepository
+                .findById(UserUtil.pasrseUUID(userId)).orElseThrow(() -> new ResourceNotFound("User with given id does not exist"));
+        return modelMapper.map(user, UserDto.class);
     }
 
     @Override
