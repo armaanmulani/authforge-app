@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -45,8 +46,14 @@ public class UserServiceImpl implements UserService {
     public UserDto updateUser(UserDto userDto, String userId) {
         UUID uId = UserUtil.pasrseUUID(userId);
         User existingUser = userRepository.findById(uId).orElseThrow(() -> new ResourceNotFound("User not found with the given id"));
-
-        return null;
+        if (userDto.getName() != null) existingUser.setName(userDto.getName());
+        if (userDto.getImage() != null) existingUser.setImage(userDto.getImage());
+        if (userDto.getProvider() != null) existingUser.setProvider(userDto.getProvider());
+        if (userDto.getPassword() != null) existingUser.setPassword(userDto.getPassword());
+        existingUser.setIsEnabled(userDto.isEnabled());
+        existingUser.setUpdatedAt(Instant.now());
+        User updatedUser = userRepository.save(existingUser);
+        return modelMapper.map(updatedUser, UserDto.class);
     }
 
     @Override
