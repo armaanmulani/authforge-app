@@ -7,8 +7,10 @@ import com.armaan.auth.models.RefreshToken;
 import com.armaan.auth.models.User;
 import com.armaan.auth.repositories.RefreshTokenRepository;
 import com.armaan.auth.repositories.UserRepository;
+import com.armaan.auth.security.CookieService;
 import com.armaan.auth.security.JwtService;
 import com.armaan.auth.services.AuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -33,6 +35,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final CookieService cookieService;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -40,7 +43,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(
-            @RequestBody LoginRequest loginRequest
+            @RequestBody LoginRequest loginRequest,
+            HttpServletResponse response
     ) {
         Authentication authentication = authenticate(loginRequest);
         User user = userRepository.findByEmail(loginRequest.email())
@@ -62,6 +66,11 @@ public class AuthController {
 
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user, refreshTokenOb.getJti());
+
+        cookieService.attachRefreshCookie(response, refreshToken, (int) jwtService.getRefreshTtlSeconds());
+        cookieService.addNoStoreHeaders(response);
+
+
         TokenResponse tokenResponse = TokenResponse.of(accessToken, refreshToken, jwtService.getAccessTtlSeconds(), modelMapper.map(user, UserDto.class));
         return ResponseEntity.ok(tokenResponse);
     }
