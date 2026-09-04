@@ -4,7 +4,9 @@ import com.armaan.auth.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -58,25 +60,9 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // @Bean
-    // public UserDetailsService users() {
-    //     User.UserBuilder userBuilder = User.withDefaultPasswordEncoder();
-    //     UserDetails user1 = userBuilder
-    //             .username("armaan")
-    //             .password("armaan123")
-    //             .roles("ADMIN")
-    //             .build();
-    //     UserDetails user2 = userBuilder
-    //             .username("tanishka")
-    //             .password("tanishka123")
-    //             .roles("ADMIN")
-    //             .build();
-    //     UserDetails user3 = userBuilder
-    //             .username("sohail")
-    //             .password("sohail123")
-    //             .roles("USER")
-    //             .build();
-    //     return new InMemoryUserDetailsManager(user1, user2, user3);
-    // }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) {
+        return configuration.getAuthenticationManager();
+    }
 
 }
