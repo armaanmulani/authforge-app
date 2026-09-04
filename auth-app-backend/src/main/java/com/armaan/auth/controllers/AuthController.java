@@ -3,7 +3,9 @@ package com.armaan.auth.controllers;
 import com.armaan.auth.dtos.LoginRequest;
 import com.armaan.auth.dtos.TokenResponse;
 import com.armaan.auth.dtos.UserDto;
+import com.armaan.auth.models.RefreshToken;
 import com.armaan.auth.models.User;
+import com.armaan.auth.repositories.RefreshTokenRepository;
 import com.armaan.auth.repositories.UserRepository;
 import com.armaan.auth.security.JwtService;
 import com.armaan.auth.services.AuthService;
@@ -21,12 +23,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @AllArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -44,8 +50,19 @@ public class AuthController {
             throw new DisabledException("User is disabled");
         }
 
+        String jti = UUID.randomUUID().toString();
+        var refreshTokenOb = RefreshToken.builder()
+                .jti(jti)
+                .user(user)
+                .createdAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(jwtService.getRefreshTtlSeconds()))
+                .revoked(false)
+                .build();
+        refreshTokenRepository.save(refreshTokenOb);
+
         String accessToken = jwtService.generateAccessToken(user);
-        TokenResponse tokenResponse = TokenResponse.of(accessToken, "", jwtService.getAccessTtlSeconds(), modelMapper.map(user, UserDto.class));
+        String refreshToken = jwtService.generateRefreshToken(user, refreshTokenOb.getJti());
+        TokenResponse tokenResponse = TokenResponse.of(accessToken, refreshToken, jwtService.getAccessTtlSeconds(), modelMapper.map(user, UserDto.class));
         return ResponseEntity.ok(tokenResponse);
     }
 
