@@ -1,9 +1,11 @@
 package com.armaan.auth.configs;
 
+import com.armaan.auth.dtos.ApiError;
 import com.armaan.auth.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -47,9 +49,14 @@ public class SecurityConfig {
                     response.setStatus(401);
                     response.setContentType("application/json");
                     String message = authException.getMessage();
-                    Map<String, String> errorMap = Map.of("message", message, "statusCode", Integer.toString(401));
+                    String error = (String) request.getAttribute("error");
+                    if (error != null) {
+                        message = error;
+                    }
+                    // Map<String, Object> errorMap = Map.of("message", message, "statusCode", 404);
+                    var apiError = ApiError.of(HttpStatus.UNAUTHORIZED.value(), "Unauthorized Access", message, request.getRequestURI());
                     var objectMapper = new ObjectMapper();
-                    response.getWriter().write(objectMapper.writeValueAsString(errorMap));
+                    response.getWriter().write(objectMapper.writeValueAsString(apiError));
                 })))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
