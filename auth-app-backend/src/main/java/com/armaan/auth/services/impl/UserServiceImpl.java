@@ -51,7 +51,6 @@ public class UserServiceImpl implements UserService {
         if (userDto.getImage() != null) existingUser.setImage(userDto.getImage());
         if (userDto.getProvider() != null) existingUser.setProvider(userDto.getProvider());
         if (userDto.getPassword() != null) existingUser.setPassword(userDto.getPassword());
-        existingUser.setIsEnabled(userDto.isEnabled());
         existingUser.setUpdatedAt(Instant.now());
         User updatedUser = userRepository.save(existingUser);
         return modelMapper.map(updatedUser, UserDto.class);

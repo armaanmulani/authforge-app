@@ -1,7 +1,13 @@
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { User, Mail, LockKeyhole, ShieldCheck } from "lucide-react";
+import {
+  User,
+  Mail,
+  LockKeyhole,
+  ShieldCheck,
+  AlertCircleIcon,
+} from "lucide-react";
 
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
@@ -19,6 +25,8 @@ import { Separator } from "@/components/ui/separator";
 import toast from "react-hot-toast";
 import type RegisterData from "@/models/RegisterData";
 import { registerUser } from "@/services/AuthService";
+import { Spinner } from "@/components/ui/spinner";
+import { Alert, AlertTitle } from "@/components/ui/alert";
 
 const Signup = () => {
   const [data, setData] = useState<RegisterData>({
@@ -28,7 +36,7 @@ const Signup = () => {
   });
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<any>(null);
   const navigate = useNavigate();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,15 +54,15 @@ const Signup = () => {
 
     //validations
     if (data.name.trim() === "") {
-      toast.error("Name is required");
+      toast.error("Name is required.");
       return;
     }
     if (data.email.trim() === "") {
-      toast.error("Email is required");
+      toast.error("Email is required.");
       return;
     }
     if (data.password.trim() === "") {
-      toast.error("Password is required");
+      toast.error("Password is required.");
       return;
     }
     if (data.password.length < 8) {
@@ -63,6 +71,7 @@ const Signup = () => {
     }
 
     try {
+      setLoading(true);
       const result = await registerUser(data);
       console.log(result);
       toast.success("User registered successfully!");
@@ -72,9 +81,11 @@ const Signup = () => {
         password: "",
       });
       navigate("/login");
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
-      toast.error("Error registering the user!");
+      setError(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -195,6 +206,19 @@ const Signup = () => {
             </motion.div>
           </CardHeader>
 
+          {error && (
+            <div className="pl-5 pr-5">
+              <Alert variant={"destructive"}>
+                <AlertCircleIcon />
+                <AlertTitle>
+                  {error?.response
+                    ? error?.response?.data?.message
+                    : error?.message}
+                </AlertTitle>
+              </Alert>
+            </div>
+          )}
+
           <CardContent>
             <form onSubmit={handleFormSubmit} className="space-y-5">
               {/* Name */}
@@ -297,11 +321,19 @@ const Signup = () => {
                 }}
               >
                 <Button
+                  disabled={loading}
                   type="submit"
                   size="lg"
                   className="w-full cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/20"
                 >
-                  Create account
+                  {loading ? (
+                    <>
+                      <Spinner />
+                      Please wait...
+                    </>
+                  ) : (
+                    <>Create account</>
+                  )}
                 </Button>
               </motion.div>
             </form>

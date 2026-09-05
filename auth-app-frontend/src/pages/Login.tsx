@@ -1,7 +1,13 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, LockKeyhole, LogIn, ShieldCheck } from "lucide-react";
+import {
+  Mail,
+  LockKeyhole,
+  LogIn,
+  ShieldCheck,
+  AlertCircleIcon,
+} from "lucide-react";
 
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
@@ -16,16 +22,55 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import type LoginData from "@/models/LoginData";
+import toast from "react-hot-toast";
+import { loginUser } from "@/services/AuthService";
+import { Alert, AlertTitle } from "@/components/ui/alert";
+import { Spinner } from "@/components/ui/spinner";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [loginData, setLoginData] = useState<LoginData>({
+    email: "",
+    password: "",
+  });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<any>(null);
 
-    // Backend integration will be added later
-    console.log("Login:", { email, password });
+  const navigate = useNavigate();
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setLoginData({
+      ...loginData,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleSubmit = async (event: React.SubmitEvent) => {
+    event.preventDefault();
+
+    //validations
+    if (loginData.email.trim() === "") {
+      toast.error("Email is required!");
+      return;
+    }
+    if (loginData.password.trim() === "") {
+      toast.error("Password is required!");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const userInfo = await loginUser(loginData);
+      toast.success("Login Success!");
+      console.log(userInfo);
+      navigate("/dashboard");
+    } catch (error: any) {
+      console.log(error);
+      setError(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = () => {
@@ -145,6 +190,20 @@ const Login = () => {
             </motion.div>
           </CardHeader>
 
+          {/* Error */}
+          {error && (
+            <div className="pl-5 pr-5">
+              <Alert variant={"destructive"}>
+                <AlertCircleIcon />
+                <AlertTitle>
+                  {error?.response
+                    ? error?.response?.data?.message
+                    : error?.message}
+                </AlertTitle>
+              </Alert>
+            </div>
+          )}
+
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Email */}
@@ -169,11 +228,10 @@ const Login = () => {
                     id="email"
                     type="email"
                     placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={loginData.email}
+                    onChange={handleInputChange}
                     className="pl-10 transition-all duration-300 focus:ring-2 focus:ring-primary/20"
-                    autoComplete="email"
-                    required
+                    name="email"
                   />
                 </div>
               </motion.div>
@@ -200,11 +258,10 @@ const Login = () => {
                     id="password"
                     type="password"
                     placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={loginData.password}
+                    onChange={handleInputChange}
+                    name="password"
                     className="pl-10 transition-all duration-300 focus:ring-2 focus:ring-primary/20"
-                    autoComplete="current-password"
-                    required
                   />
                 </div>
               </motion.div>
@@ -219,12 +276,21 @@ const Login = () => {
                 }}
               >
                 <Button
+                  disabled={loading}
                   type="submit"
                   size="lg"
                   className="w-full cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/20"
                 >
-                  <LogIn className="size-4" />
-                  Sign in
+                  {loading ? (
+                    <>
+                      <Spinner />
+                      Please wait...
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="size-4" /> Sign in
+                    </>
+                  )}
                 </Button>
               </motion.div>
             </form>
