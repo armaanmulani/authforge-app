@@ -101,48 +101,6 @@ const Signup = () => {
 
   return (
     <main className="relative flex min-h-[calc(100vh-73px)] items-center justify-center overflow-hidden px-4 py-12">
-      {/* Background glow */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <motion.div
-          className="absolute left-1/2 top-1/2 h-100 w-100 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl"
-          animate={{
-            scale: [1, 1.15, 1],
-            opacity: [0.4, 0.6, 0.4],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-
-        <motion.div
-          className="absolute -left-20 top-20 h-72 w-72 rounded-full bg-primary/5 blur-3xl"
-          animate={{
-            x: [0, 40, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-
-        <motion.div
-          className="absolute -bottom-20 -right-20 h-80 w-80 rounded-full bg-primary/5 blur-3xl"
-          animate={{
-            x: [0, -30, 0],
-            y: [0, -40, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      </div>
-
       {/* Signup Card */}
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.97 }}
