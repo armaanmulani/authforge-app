@@ -27,6 +27,7 @@ import toast from "react-hot-toast";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
 import useAuth from "@/services/Store";
+import { signWithGoogle } from "@/services/AuthService";
 
 const Login = () => {
   const [loginData, setLoginData] = useState<LoginData>({
@@ -73,9 +74,18 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Google OAuth will be implemented later
+  const handleGoogleLogin = async () => {
     console.log("Continue with Google");
+    try {
+      setLoading(true);
+      await signWithGoogle();
+      toast.success("Login Success!");
+      navigate("/dashboard");
+    } catch (error) {
+      setError(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGithubLogin = () => {

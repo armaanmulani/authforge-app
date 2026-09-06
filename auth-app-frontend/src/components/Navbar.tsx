@@ -11,15 +11,16 @@ function Navbar() {
   return (
     <nav className="py-5 dark:border-b border-gray-700 md:py-0 flex md:flex-row flex-col md:h-14 gap-4 md:gap-0 justify-around items-center">
       <div className="font-semibold flex items-center gap-2">
-        <span className="inline-block text-center h-6 w-6 rounded-md bg-linear-to-r from-primary to-primary/40">
-          {"A"}
-        </span>
-        <span className="text-base tracking-tight">Auth App</span>
+        <span className="inline-block text-center h-6 w-6 rounded-md bg-linear-to-r from-primary to-primary/40"></span>
+        <NavLink to={"/"} className="text-base tracking-tight">
+          AuthForge
+        </NavLink>
       </div>
 
       <div className="flex gap-4 items-center">
         {checkLogin() ? (
           <>
+            <NavLink to={"/dashboard"}>Dashboard</NavLink>
             <NavLink to={"#"}>{user?.name}</NavLink>
             <Button
               size={"sm"}
