@@ -28,6 +28,11 @@ export const getCurrUser = async (emailId: string | undefined) => {
   return response.data;
 };
 
+export const refershToken = async () => {
+  const response = await apiClient.post<LoginResponseData>(`/auth/refresh`);
+  return response.data;
+};
+
 export const deleteUser = async (userId: string) => {
   const response = await apiClient.delete(`users/${userId}`);
   return response.data;
