@@ -1,6 +1,7 @@
 package com.armaan.auth.dtos;
 
 import com.armaan.auth.models.Provider;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.Instant;
@@ -20,6 +21,8 @@ public class UserDto {
     private String name;
     private String password;
     private String image;
+    @JsonProperty("isEnabled")
+    private boolean isEnabled = true;
     private Instant createdAt = Instant.now();
     private Instant updatedAt = Instant.now();
     private Provider provider = Provider.LOCAL;

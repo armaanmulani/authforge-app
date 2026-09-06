@@ -392,9 +392,7 @@ export default function UserProfile() {
                   <div className="flex h-10 items-center rounded-md border border-border bg-muted/30 px-3">
                     <span
                       className={`inline-flex items-center gap-2 text-sm font-medium ${
-                        user?.isEnabled
-                          ? "text-primary"
-                          : "text-muted-foreground"
+                        user?.enabled ? "text-primary" : "text-muted-foreground"
                       }`}
                     >
                       <span

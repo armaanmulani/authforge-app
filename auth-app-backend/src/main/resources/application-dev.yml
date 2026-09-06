@@ -36,6 +36,18 @@ spring:
               - user:email
               - read:user
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 security:
   jwt:
     secret: ${JWT_SECRET:128iJiF6gVmimME0R8MGmKfUlMA31MO5sAjfTlHFkg0mNHRHHOcXeDaTLNYBJ8SiIeqkWiGTBV2YpkDYyy9ExD}
@@ -55,3 +67,4 @@ app:
     frontend:
       success-redirect: http://localhost:5173/oauth/success
       failure-redirect: http://localhost:5173/oauth/failure
+

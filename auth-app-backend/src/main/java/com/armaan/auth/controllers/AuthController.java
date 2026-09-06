@@ -1,16 +1,17 @@
 package com.armaan.auth.controllers;
 
-import com.armaan.auth.dtos.LoginRequest;
-import com.armaan.auth.dtos.RefreshTokenRequest;
-import com.armaan.auth.dtos.TokenResponse;
-import com.armaan.auth.dtos.UserDto;
+import com.armaan.auth.dtos.*;
 import com.armaan.auth.models.RefreshToken;
 import com.armaan.auth.models.User;
+import com.armaan.auth.repositories.PasswordResetOtpRepository;
+import com.armaan.auth.repositories.PasswordResetTokenRepository;
 import com.armaan.auth.repositories.RefreshTokenRepository;
 import com.armaan.auth.repositories.UserRepository;
 import com.armaan.auth.security.CookieService;
 import com.armaan.auth.security.JwtService;
 import com.armaan.auth.services.AuthService;
+import com.armaan.auth.services.EmailService;
+import com.armaan.auth.services.PasswordResetService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +27,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,6 +44,7 @@ import java.util.UUID;
 public class AuthController {
 
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final CookieService cookieService;
     private final AuthenticationManager authenticationManager;
@@ -205,6 +208,39 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<UserDto> registerUser(@RequestBody UserDto userDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerUser(userDto));
+    }
+
+    @PostMapping("/password/forgot")
+    public ResponseEntity<Void> forgotPassword(
+            @RequestBody ForgotPasswordRequest request) {
+
+        passwordResetService.forgotPassword(request.email());
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/password/verify-otp")
+    public ResponseEntity<String> verifyOtp(
+            @RequestBody VerifyOtpRequest request) {
+
+        String resetToken = passwordResetService.verifyOtp(
+                request.email(),
+                request.otp()
+        );
+
+        return ResponseEntity.ok(resetToken);
+    }
+
+    @PostMapping("/password/reset")
+    public ResponseEntity<Void> resetPassword(
+            @RequestBody ResetPasswordRequest request) {
+
+        passwordResetService.resetPassword(
+                request.resetToken(),
+                request.newPassword()
+        );
+
+        return ResponseEntity.noContent().build();
     }
 
 }

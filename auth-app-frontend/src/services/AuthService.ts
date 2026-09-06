@@ -38,7 +38,31 @@ export const deleteUser = async (userId: string) => {
   return response.data;
 };
 
-export const signWithGoogle = async () => {
-  const response = await apiClient.get(`oauth2/authorization/google`);
+export const forgotPassword = async (email: string) => {
+  const response = await apiClient.post(`auth/password/forgot`, {
+    email,
+  });
+
+  return response.data;
+};
+
+export const verifyOtp = async (email: string, otp: string) => {
+  const response = await apiClient.post<string>(`auth/password/verify-otp`, {
+    email,
+    otp,
+  });
+
+  return response.data;
+};
+
+export const resetPassword = async (
+  resetToken: string,
+  newPassword: string,
+) => {
+  const response = await apiClient.post(`auth/password/reset`, {
+    resetToken,
+    newPassword,
+  });
+
   return response.data;
 };
