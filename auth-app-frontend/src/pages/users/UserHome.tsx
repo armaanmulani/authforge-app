@@ -4,7 +4,6 @@ import {
   FolderKanban,
   Home,
   LineChart,
-  Plus,
   Search,
   Settings,
   Users,

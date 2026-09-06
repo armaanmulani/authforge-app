@@ -9,9 +9,6 @@ import {
   AlertCircleIcon,
 } from "lucide-react";
 
-import { FcGoogle } from "react-icons/fc";
-import { FaGithub } from "react-icons/fa";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +24,7 @@ import type RegisterData from "@/models/RegisterData";
 import { registerUser } from "@/services/AuthService";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertTitle } from "@/components/ui/alert";
+import OAuth2Buttons from "@/components/OAuth2Buttons";
 
 const Signup = () => {
   const [data, setData] = useState<RegisterData>({
@@ -87,16 +85,6 @@ const Signup = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleSignup = () => {
-    // Google OAuth will be implemented later
-    console.log("Continue with Google");
-  };
-
-  const handleGithubSignup = () => {
-    // GitHub OAuth will be implemented later
-    console.log("Continue with GitHub");
   };
 
   return (
@@ -316,51 +304,7 @@ const Signup = () => {
             </motion.div>
 
             {/* OAuth Buttons */}
-            <div className="space-y-3">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: 0.8,
-                  duration: 0.5,
-                }}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="lg"
-                  className="w-full cursor-pointer transition-all duration-300 hover:bg-muted/70"
-                  onClick={handleGoogleSignup}
-                >
-                  <FcGoogle className="size-4" />
-                  Continue with Google
-                </Button>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: 0.9,
-                  duration: 0.5,
-                }}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="lg"
-                  className="w-full cursor-pointer transition-all duration-300 hover:bg-muted/70"
-                  onClick={handleGithubSignup}
-                >
-                  <FaGithub className="size-4" />
-                  Continue with GitHub
-                </Button>
-              </motion.div>
-            </div>
+            <OAuth2Buttons />
           </CardContent>
 
           {/* Footer */}

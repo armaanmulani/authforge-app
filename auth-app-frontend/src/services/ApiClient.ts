@@ -1,6 +1,6 @@
 import axios from "axios";
 import useAuth from "./Store";
-import { refershToken } from "./AuthService";
+import { refreshToken } from "./AuthService";
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8083/api/v1",
@@ -55,7 +55,7 @@ apiClient.interceptors.response.use(
     isRefreshing = true;
     try {
       console.log("Start refreshing...");
-      const loginResponse = await refershToken();
+      const loginResponse = await refreshToken();
       const newToken = loginResponse.accessToken;
       if (!newToken) throw new Error("No access token recieved!");
       useAuth
