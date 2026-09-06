@@ -2,8 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Shield, Lock, Sparkles, Fingerprint } from "lucide-react";
+import { useNavigate } from "react-router";
 
 export default function FuturisticAuthHome() {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors overflow-hidden">
       {/* Hero Section */}
@@ -32,13 +34,13 @@ export default function FuturisticAuthHome() {
           transition={{ delay: 0.5, duration: 0.8 }}
           className="mt-10 flex gap-4"
         >
-          <Button size="lg" className="rounded-2xl text-lg px-6">
+          <Button size="lg" className="rounded-2xl text-lg px-6 cursor-pointer">
             Get Started
           </Button>
           <Button
             size="lg"
             variant="outline"
-            className="rounded-2xl text-lg px-6 border-border"
+            className="rounded-2xl text-lg px-6 border-border cursor-pointer"
           >
             Learn More
           </Button>
@@ -98,7 +100,13 @@ export default function FuturisticAuthHome() {
           system.
         </p>
 
-        <Button size="lg" className="mt-8 px-8 text-lg rounded-2xl">
+        <Button
+          size="lg"
+          className="mt-8 px-8 text-lg rounded-2xl cursor-pointer"
+          onClick={() => {
+            navigate("/signup");
+          }}
+        >
           Create Account
         </Button>
       </section>
@@ -155,7 +163,8 @@ export default function FuturisticAuthHome() {
 
       {/* Footer */}
       <footer className="py-10 text-center text-muted-foreground border-t border-border">
-        © {new Date().getFullYear()} Futuristic Auth. All rights reserved.
+        © {new Date().getFullYear()} Auth App - Armaan Mulani. All rights
+        reserved.
       </footer>
     </div>
   );

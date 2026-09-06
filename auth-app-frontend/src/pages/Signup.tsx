@@ -1,4 +1,4 @@
-import React, { useState, type ChangeEvent, type FormEvent } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -126,7 +126,7 @@ const Signup = () => {
             }}
           />
 
-          <CardHeader className="pb-6 pt-5">
+          <CardHeader className="pb-3 pt-3">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -372,7 +372,7 @@ const Signup = () => {
               duration: 0.5,
             }}
           >
-            <CardFooter className="border-t border-border/40 pt-5">
+            <CardFooter className="border-t border-border/40 pt-2.5">
               <Link
                 to="/login"
                 className="text-sm text-muted-foreground transition-colors hover:text-foreground"

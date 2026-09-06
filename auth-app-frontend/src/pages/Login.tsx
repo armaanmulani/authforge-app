@@ -24,9 +24,9 @@ import {
 import { Separator } from "@/components/ui/separator";
 import type LoginData from "@/models/LoginData";
 import toast from "react-hot-toast";
-import { loginUser } from "@/services/AuthService";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
+import useAuth from "@/services/Store";
 
 const Login = () => {
   const [loginData, setLoginData] = useState<LoginData>({
@@ -38,6 +38,7 @@ const Login = () => {
   const [error, setError] = useState<any>(null);
 
   const navigate = useNavigate();
+  const login = useAuth((state) => state.login);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setLoginData({
@@ -61,9 +62,8 @@ const Login = () => {
 
     try {
       setLoading(true);
-      const userInfo = await loginUser(loginData);
+      await login(loginData);
       toast.success("Login Success!");
-      console.log(userInfo);
       navigate("/dashboard");
     } catch (error: any) {
       console.log(error);
