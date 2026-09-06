@@ -49,6 +49,7 @@ import { useNavigate } from "react-router";
 
 export default function UserProfile() {
   const user = useAuth((state) => state.user);
+  const logout = useAuth((state) => state.logout);
 
   const navigate = useNavigate();
 
@@ -184,7 +185,7 @@ export default function UserProfile() {
 
       await deleteUser(user.id);
 
-      await logoutUser();
+      await logout();
 
       toast.success("Account permanently deleted!");
 

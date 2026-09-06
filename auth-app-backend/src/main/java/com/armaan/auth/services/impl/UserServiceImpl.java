@@ -4,6 +4,7 @@ import com.armaan.auth.dtos.UserDto;
 import com.armaan.auth.exceptions.ResourceNotFound;
 import com.armaan.auth.models.Provider;
 import com.armaan.auth.models.User;
+import com.armaan.auth.repositories.RefreshTokenRepository;
 import com.armaan.auth.repositories.UserRepository;
 import com.armaan.auth.services.UserService;
 import com.armaan.auth.utils.UserUtil;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -57,9 +59,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteUserById(String uuid) {
+
         UUID userId = UserUtil.pasrseUUID(uuid);
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFound("User does not exist with given id"));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new ResourceNotFound("User does not exist with given id")
+                );
+
+        refreshTokenRepository.deleteAllByUser(user);
+
         userRepository.delete(user);
     }
 

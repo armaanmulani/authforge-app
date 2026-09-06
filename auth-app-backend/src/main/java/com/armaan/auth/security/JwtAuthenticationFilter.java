@@ -32,47 +32,121 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
+
         String header = request.getHeader("Authorization");
-        logger.info("Authorization header: {}", header);
+
+        logger.info("========== JWT FILTER ==========");
+        logger.info("Request: {} {}", request.getMethod(), request.getRequestURI());
+        logger.info("Authorization header present: {}", header != null);
 
         if (header != null && header.startsWith("Bearer ")) {
+
             String token = header.substring(7);
+
             try {
-                if (!jwtService.isAccessToken(token)) {
+
+                boolean isAccessToken = jwtService.isAccessToken(token);
+
+                logger.info("Is access token: {}", isAccessToken);
+
+                if (!isAccessToken) {
+                    logger.warn("Token is NOT an access token");
                     filterChain.doFilter(request, response);
                     return;
                 }
 
                 Jws<Claims> parse = jwtService.parse(token);
                 Claims payload = parse.getPayload();
+
                 String userId = payload.getSubject();
+
+                logger.info("JWT subject/userId: {}", userId);
+
                 UUID userUuid = UserUtil.pasrseUUID(userId);
 
                 userRepository.findById(userUuid)
-                        .ifPresent(user -> {
-                            if (user.isEnabled()) {
-                                List<GrantedAuthority> authorities = user.getRoles() == null ? List.of() : user.getRoles().stream()
-                                        .map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList());
+                        .ifPresentOrElse(user -> {
 
-                                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                                        user.getEmail(), null, authorities
+                            logger.info("User found: {}", user.getEmail());
+                            logger.info("User enabled: {}", user.isEnabled());
+
+                            if (user.isEnabled()) {
+
+                                List<GrantedAuthority> authorities =
+                                        user.getRoles() == null
+                                                ? List.of()
+                                                : user.getRoles().stream()
+                                                .map(role ->
+                                                        new SimpleGrantedAuthority(role.getName())
+                                                )
+                                                .collect(Collectors.toList());
+
+                                UsernamePasswordAuthenticationToken authentication =
+                                        new UsernamePasswordAuthenticationToken(
+                                                user.getEmail(),
+                                                null,
+                                                authorities
+                                        );
+
+                                authentication.setDetails(
+                                        new WebAuthenticationDetailsSource()
+                                                .buildDetails(request)
                                 );
 
-                                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                                if (SecurityContextHolder
+                                        .getContext()
+                                        .getAuthentication() == null) {
 
-                                if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                                    SecurityContextHolder
+                                            .getContext()
+                                            .setAuthentication(authentication);
+
+                                    logger.info(
+                                            "Authentication successfully set for {}",
+                                            user.getEmail()
+                                    );
+
+                                } else {
+                                    logger.info(
+                                            "SecurityContext already contains authentication: {}",
+                                            SecurityContextHolder
+                                                    .getContext()
+                                                    .getAuthentication()
+                                    );
                                 }
+
+                            } else {
+                                logger.warn("USER IS DISABLED!");
                             }
+
+                        }, () -> {
+                            logger.warn("USER NOT FOUND: {}", userUuid);
                         });
 
             } catch (ExpiredJwtException e) {
+
+                logger.error("JWT EXPIRED", e);
+
                 request.setAttribute("error", "Token expired");
+
             } catch (Exception e) {
+
+                logger.error("JWT VALIDATION FAILED", e);
+
                 request.setAttribute("error", "Invalid token");
             }
         }
+
+        logger.info(
+                "Authentication before filter chain: {}",
+                SecurityContextHolder.getContext().getAuthentication()
+        );
+
         filterChain.doFilter(request, response);
     }
 
