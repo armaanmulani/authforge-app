@@ -1,8 +1,8 @@
 package com.armaan.auth;
 
-import com.armaan.auth.configs.AppConstants;
-import com.armaan.auth.models.Role;
-import com.armaan.auth.repositories.RoleRepository;
+import com.armaan.auth.auth.configs.AppConstants;
+import com.armaan.auth.auth.models.Role;
+import com.armaan.auth.auth.repositories.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
