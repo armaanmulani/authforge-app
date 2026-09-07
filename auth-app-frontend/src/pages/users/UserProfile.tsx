@@ -7,6 +7,8 @@ import {
   Camera,
   Check,
   Edit3,
+  Eye,
+  EyeOff,
   Lock,
   Mail,
   ShieldCheck,
@@ -37,11 +39,20 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 import { Alert, AlertTitle } from "@/components/ui/alert";
 
 import useAuth from "@/services/Store";
 
-import { deleteUser } from "@/services/AuthService";
+import { changePassword, deleteUser } from "@/services/AuthService";
 
 import toast from "react-hot-toast";
 
@@ -53,24 +64,48 @@ export default function UserProfile() {
 
   const navigate = useNavigate();
 
+  // ============================================================
+  // PROFILE STATE
+  // ============================================================
+
   const [isEditing, setIsEditing] = useState(false);
 
   const [loading, setLoading] = useState(false);
 
   const [error, setError] = useState<any>(null);
 
-  /*
-   * Only fields that are actually editable from the User model.
-   */
   const [profile, setProfile] = useState({
     name: "",
     email: "",
     image: "",
   });
 
-  /*
-   * Sync local profile state whenever the Zustand user changes.
-   */
+  // ============================================================
+  // CHANGE PASSWORD STATE
+  // ============================================================
+
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
+  const [passwordError, setPasswordError] = useState("");
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // ============================================================
+  // SYNC PROFILE WITH ZUSTAND USER
+  // ============================================================
+
   useEffect(() => {
     if (user) {
       setProfile({
@@ -81,9 +116,10 @@ export default function UserProfile() {
     }
   }, [user]);
 
-  /*
-   * Update editable fields.
-   */
+  // ============================================================
+  // PROFILE HANDLERS
+  // ============================================================
+
   const handleChange = (field: keyof typeof profile, value: string) => {
     setProfile((current) => ({
       ...current,
@@ -91,9 +127,6 @@ export default function UserProfile() {
     }));
   };
 
-  /*
-   * Enter edit mode.
-   */
   const handleStartEditing = () => {
     if (!user) return;
 
@@ -107,9 +140,6 @@ export default function UserProfile() {
     setError(null);
   };
 
-  /*
-   * Cancel editing and restore original values.
-   */
   const handleCancelEditing = () => {
     if (user) {
       setProfile({
@@ -123,11 +153,6 @@ export default function UserProfile() {
     setError(null);
   };
 
-  /*
-   * Save profile.
-   *
-   * Backend integration will be added later.
-   */
   const handleSaveProfile = () => {
     console.log("Updated profile:", profile);
 
@@ -136,12 +161,10 @@ export default function UserProfile() {
     setIsEditing(false);
   };
 
-  /*
-   * Profile picture selection.
-   *
-   * This only creates a local preview for now.
-   * Backend upload can be added later.
-   */
+  // ============================================================
+  // PROFILE IMAGE
+  // ============================================================
+
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
@@ -158,9 +181,10 @@ export default function UserProfile() {
     reader.readAsDataURL(file);
   };
 
-  /*
-   * Generate avatar initials.
-   */
+  // ============================================================
+  // AVATAR INITIALS
+  // ============================================================
+
   const getInitials = (name?: string) => {
     if (!name?.trim()) return "U";
 
@@ -173,9 +197,119 @@ export default function UserProfile() {
       .toUpperCase();
   };
 
-  /*
-   * Delete account.
-   */
+  // ============================================================
+  // CHANGE PASSWORD
+  // ============================================================
+
+  const resetPasswordForm = () => {
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+
+    setPasswordError("");
+
+    setShowCurrentPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
+  };
+
+  const handlePasswordDialogChange = (open: boolean) => {
+    setIsPasswordDialogOpen(open);
+
+    if (!open) {
+      resetPasswordForm();
+    }
+  };
+
+  const handlePasswordInputChange = (
+    field: keyof typeof passwordData,
+    value: string,
+  ) => {
+    setPasswordData((current) => ({
+      ...current,
+      [field]: value,
+    }));
+
+    setPasswordError("");
+  };
+
+  const handleChangePassword = async () => {
+    setPasswordError("");
+
+    // ----------------------------------------------------------
+    // Validation
+    // ----------------------------------------------------------
+
+    if (!passwordData.currentPassword) {
+      setPasswordError("Current password is required.");
+      return;
+    }
+
+    if (!passwordData.newPassword) {
+      setPasswordError("New password is required.");
+      return;
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      setPasswordError("New password must be at least 8 characters.");
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+
+    if (passwordData.currentPassword === passwordData.newPassword) {
+      setPasswordError(
+        "New password must be different from your current password.",
+      );
+      return;
+    }
+
+    // ----------------------------------------------------------
+    // API CALL
+    // ----------------------------------------------------------
+
+    try {
+      setPasswordLoading(true);
+
+      await changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword,
+      );
+
+      resetPasswordForm();
+
+      setIsPasswordDialogOpen(false);
+
+      toast.success("Password changed successfully. Please log in again.");
+
+      /*
+       * Backend revokes all refresh tokens after a password change.
+       * Logging out here gives the user a clean authentication state.
+       */
+
+      await logout();
+
+      navigate("/login");
+    } catch (error: any) {
+      setPasswordError(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to change password.",
+      );
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  // ============================================================
+  // DELETE ACCOUNT
+  // ============================================================
+
   const handleDeleteAccount = async () => {
     if (!user?.id) return;
 
@@ -197,10 +331,22 @@ export default function UserProfile() {
     }
   };
 
+  // ============================================================
+  // PROVIDER CHECK
+  // ============================================================
+
+  const isLocalAccount = String(user?.provider ?? "").toUpperCase() === "LOCAL";
+
+  // ============================================================
+  // UI
+  // ============================================================
+
   return (
     <main className="min-h-screen overflow-hidden bg-background px-4 py-10 text-foreground">
       <div className="mx-auto w-full max-w-3xl space-y-6">
-        {/* ==================== PAGE HEADER ==================== */}
+        {/* ======================================================
+            PAGE HEADER
+        ====================================================== */}
 
         <motion.div
           initial={{ opacity: 0, y: -15 }}
@@ -215,7 +361,9 @@ export default function UserProfile() {
           </p>
         </motion.div>
 
-        {/* ==================== ERROR ==================== */}
+        {/* ======================================================
+            ERROR
+        ====================================================== */}
 
         <AnimatePresence>
           {error && (
@@ -237,7 +385,9 @@ export default function UserProfile() {
           )}
         </AnimatePresence>
 
-        {/* ==================== PROFILE CARD ==================== */}
+        {/* ======================================================
+            PROFILE CARD
+        ====================================================== */}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -277,7 +427,9 @@ export default function UserProfile() {
             </CardHeader>
 
             <CardContent className="space-y-7 pt-7">
-              {/* ==================== AVATAR ==================== */}
+              {/* =================================================
+                  AVATAR
+              ================================================= */}
 
               <motion.div layout className="flex flex-col items-center gap-3">
                 <div className="relative">
@@ -292,13 +444,11 @@ export default function UserProfile() {
                     </AvatarFallback>
                   </Avatar>
 
-                  {/* Camera button only in edit mode */}
-
                   {isEditing && (
                     <>
                       <label
                         htmlFor="profile-picture"
-                        className="absolute bottom-0 right-0 flex size-9 cursor-pointer items-center justify-center rounded-full border border-border bg-background shadow-md transition-all hover:bg-accent hover:scale-105"
+                        className="absolute bottom-0 right-0 flex size-9 cursor-pointer items-center justify-center rounded-full border border-border bg-background shadow-md transition-all hover:scale-105 hover:bg-accent"
                       >
                         <Camera className="size-4" />
                       </label>
@@ -321,7 +471,9 @@ export default function UserProfile() {
                 )}
               </motion.div>
 
-              {/* ==================== PROFILE FIELDS ==================== */}
+              {/* =================================================
+                  PROFILE FIELDS
+              ================================================= */}
 
               <div className="grid gap-5 md:grid-cols-2">
                 {/* Name */}
@@ -407,7 +559,9 @@ export default function UserProfile() {
                 </div>
               </div>
 
-              {/* ==================== EDIT ACTIONS ==================== */}
+              {/* =================================================
+                  EDIT ACTIONS
+              ================================================= */}
 
               <AnimatePresence mode="wait">
                 {isEditing && (
@@ -451,7 +605,9 @@ export default function UserProfile() {
           </Card>
         </motion.div>
 
-        {/* ==================== ACCOUNT SETTINGS ==================== */}
+        {/* ======================================================
+            ACCOUNT SETTINGS
+        ====================================================== */}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -471,18 +627,51 @@ export default function UserProfile() {
             </CardHeader>
 
             <CardContent className="space-y-3">
-              {/* Change Password */}
+              {/* =================================================
+                  CHANGE PASSWORD
+              ================================================= */}
 
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full cursor-pointer justify-center"
-              >
-                <Lock className="size-4" />
-                Change Password
-              </Button>
+              {isLocalAccount && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full cursor-pointer justify-center"
+                  onClick={() => {
+                    setPasswordError("");
+                    setIsPasswordDialogOpen(true);
+                  }}
+                >
+                  <Lock className="size-4" />
+                  Change Password
+                </Button>
+              )}
 
-              {/* Delete Account */}
+              {/* =================================================
+                  SOCIAL ACCOUNT MESSAGE
+              ================================================= */}
+
+              {!isLocalAccount && (
+                <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
+                  <div className="flex gap-3">
+                    <ShieldCheck className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+
+                    <div>
+                      <p className="text-sm font-medium">
+                        Password managed by {user?.provider ?? "your provider"}
+                      </p>
+
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        This account uses social authentication, so there is no
+                        AuthForge password to change.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* =================================================
+                  DELETE ACCOUNT
+              ================================================= */}
 
               <AlertDialog>
                 <AlertDialogTrigger
@@ -526,6 +715,216 @@ export default function UserProfile() {
           </Card>
         </motion.div>
       </div>
+
+      {/* ========================================================
+          CHANGE PASSWORD DIALOG
+      ======================================================== */}
+
+      <Dialog
+        open={isPasswordDialogOpen}
+        onOpenChange={handlePasswordDialogChange}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="size-5" />
+              Change Password
+            </DialogTitle>
+
+            <DialogDescription>
+              Enter your current password and choose a new password for your
+              account.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5 py-2">
+            {/* =================================================
+                ERROR
+            ================================================= */}
+
+            <AnimatePresence>
+              {passwordError && (
+                <motion.div
+                  initial={{
+                    opacity: 0,
+                    height: 0,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    height: "auto",
+                  }}
+                  exit={{
+                    opacity: 0,
+                    height: 0,
+                  }}
+                >
+                  <Alert variant="destructive">
+                    <AlertCircleIcon />
+
+                    <AlertTitle>{passwordError}</AlertTitle>
+                  </Alert>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* =================================================
+                CURRENT PASSWORD
+            ================================================= */}
+
+            <div className="space-y-2">
+              <Label htmlFor="current-password">Current Password</Label>
+
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+
+                <Input
+                  id="current-password"
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={passwordData.currentPassword}
+                  onChange={(event) =>
+                    handlePasswordInputChange(
+                      "currentPassword",
+                      event.target.value,
+                    )
+                  }
+                  placeholder="Enter current password"
+                  className="pr-10 pl-10"
+                  disabled={passwordLoading}
+                  autoComplete="current-password"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword((current) => !current)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showCurrentPassword ? (
+                    <EyeOff className="size-4" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* =================================================
+                NEW PASSWORD
+            ================================================= */}
+
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+
+                <Input
+                  id="new-password"
+                  type={showNewPassword ? "text" : "password"}
+                  value={passwordData.newPassword}
+                  onChange={(event) =>
+                    handlePasswordInputChange("newPassword", event.target.value)
+                  }
+                  placeholder="Enter new password"
+                  className="pr-10 pl-10"
+                  disabled={passwordLoading}
+                  autoComplete="new-password"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword((current) => !current)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showNewPassword ? (
+                    <EyeOff className="size-4" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
+                </button>
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Password must be at least 8 characters.
+              </p>
+            </div>
+
+            {/* =================================================
+                CONFIRM PASSWORD
+            ================================================= */}
+
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm New Password</Label>
+
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+
+                <Input
+                  id="confirm-password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={passwordData.confirmPassword}
+                  onChange={(event) =>
+                    handlePasswordInputChange(
+                      "confirmPassword",
+                      event.target.value,
+                    )
+                  }
+                  placeholder="Confirm new password"
+                  className="pr-10 pl-10"
+                  disabled={passwordLoading}
+                  autoComplete="new-password"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((current) => !current)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="size-4" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ====================================================
+              DIALOG ACTIONS
+          ==================================================== */}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              className="cursor-pointer"
+              onClick={() => handlePasswordDialogChange(false)}
+              disabled={passwordLoading}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="button"
+              className="cursor-pointer"
+              onClick={handleChangePassword}
+              disabled={passwordLoading}
+            >
+              {passwordLoading ? (
+                "Changing Password..."
+              ) : (
+                <>
+                  <Check className="size-4" />
+                  Change Password
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
