@@ -1,11 +1,13 @@
 package com.armaan.auth.controllers;
 
+import com.armaan.auth.configs.AppConstants;
 import com.armaan.auth.dtos.RegisterRequest;
 import com.armaan.auth.dtos.UserDto;
 import com.armaan.auth.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -40,6 +42,7 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(userDto, userId));
     }
 
+    // @PreAuthorize("hasRole('" + AppConstants.ROLE_ADMIN + "')")
     @GetMapping("/{userId}")
     public ResponseEntity<UserDto> getUserById(@PathVariable("userId") String userId) {
         return ResponseEntity.ok(userService.getUserById(userId));

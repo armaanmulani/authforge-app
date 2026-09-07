@@ -10,4 +10,7 @@ public class AppConstants {
             "/api/v1/auth/**"
     };
 
+    public static final String ROLE_ADMIN = "ADMIN";
+    public static final String ROLE_GUEST = "GUEST";
+
 }

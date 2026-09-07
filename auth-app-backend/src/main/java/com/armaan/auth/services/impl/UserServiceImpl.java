@@ -1,11 +1,14 @@
 package com.armaan.auth.services.impl;
 
+import com.armaan.auth.configs.AppConstants;
 import com.armaan.auth.dtos.RegisterRequest;
 import com.armaan.auth.dtos.UserDto;
 import com.armaan.auth.exceptions.ResourceNotFound;
 import com.armaan.auth.models.Provider;
+import com.armaan.auth.models.Role;
 import com.armaan.auth.models.User;
 import com.armaan.auth.repositories.RefreshTokenRepository;
+import com.armaan.auth.repositories.RoleRepository;
 import com.armaan.auth.repositories.UserRepository;
 import com.armaan.auth.services.EmailService;
 import com.armaan.auth.services.UserService;
@@ -24,6 +27,7 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
     private final ModelMapper modelMapper;
@@ -37,19 +41,31 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Email is required");
         }
 
+        if (request.password() == null || request.password().isBlank()) {
+            throw new IllegalArgumentException("Password is required");
+        }
+
         if (userRepository.existsByEmail(request.email())) {
             throw new IllegalArgumentException(
                     "User with given email already exists"
             );
         }
 
+        Role role = roleRepository
+                .findByName("ROLE_" + AppConstants.ROLE_GUEST)
+                .orElseThrow(() ->
+                        new IllegalStateException("Default guest role not found")
+                );
+
         User user = User.builder()
                 .name(request.name())
-                .email(request.email())
+                .email(request.email().trim())
                 .password(passwordEncoder.encode(request.password()))
                 .isEnabled(true)
                 .provider(Provider.LOCAL)
                 .build();
+
+        user.getRoles().add(role);
 
         User savedUser = userRepository.save(user);
 
