@@ -1,16 +1,19 @@
 package com.armaan.auth.services.impl;
 
+import com.armaan.auth.dtos.RegisterRequest;
 import com.armaan.auth.dtos.UserDto;
 import com.armaan.auth.exceptions.ResourceNotFound;
 import com.armaan.auth.models.Provider;
 import com.armaan.auth.models.User;
 import com.armaan.auth.repositories.RefreshTokenRepository;
 import com.armaan.auth.repositories.UserRepository;
+import com.armaan.auth.services.EmailService;
 import com.armaan.auth.services.UserService;
 import com.armaan.auth.utils.UserUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -21,21 +24,41 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
     private final ModelMapper modelMapper;
+    private final EmailService emailService;
 
     @Override
     @Transactional
-    public UserDto createUser(UserDto userDto) {
-        if (userDto.getEmail() == null || userDto.getEmail().isBlank()) {
+    public UserDto createUser(RegisterRequest request) {
+
+        if (request.email() == null || request.email().isBlank()) {
             throw new IllegalArgumentException("Email is required");
         }
-        if (userRepository.existsByEmail(userDto.getEmail())) {
-            throw new IllegalArgumentException("User with given email already exists");
+
+        if (userRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException(
+                    "User with given email already exists"
+            );
         }
-        User user = modelMapper.map(userDto, User.class);
-        user.setProvider(userDto.getProvider() != null ? userDto.getProvider() : Provider.LOCAL);
+
+        User user = User.builder()
+                .name(request.name())
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .isEnabled(true)
+                .provider(Provider.LOCAL)
+                .build();
+
         User savedUser = userRepository.save(user);
+
+        emailService.sendWelcomeEmail(
+                savedUser.getEmail(),
+                savedUser.getName(),
+                savedUser.getProvider()
+        );
+
         return modelMapper.map(savedUser, UserDto.class);
     }
 

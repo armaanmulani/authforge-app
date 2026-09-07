@@ -1,5 +1,6 @@
 package com.armaan.auth.services.impl;
 
+import com.armaan.auth.dtos.RegisterRequest;
 import com.armaan.auth.dtos.UserDto;
 import com.armaan.auth.services.AuthService;
 import com.armaan.auth.services.UserService;
@@ -15,8 +16,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserDto registerUser(UserDto userDto) {
-        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        return userService.createUser(userDto);
+    public UserDto registerUser(RegisterRequest request) {
+        return userService.createUser(request);
     }
 }

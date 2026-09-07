@@ -1,10 +1,11 @@
 package com.armaan.auth.services;
 
+import com.armaan.auth.dtos.RegisterRequest;
 import com.armaan.auth.dtos.UserDto;
 
 public interface UserService {
 
-    UserDto createUser(UserDto userDto);
+    UserDto createUser(RegisterRequest userDto);
 
     UserDto getUserByEmail(String email);
 

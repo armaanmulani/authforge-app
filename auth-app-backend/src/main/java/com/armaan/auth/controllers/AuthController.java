@@ -206,8 +206,10 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> registerUser(@RequestBody UserDto userDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerUser(userDto));
+    public ResponseEntity<?> register(
+            @RequestBody RegisterRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerUser(request));
     }
 
     @PostMapping("/password/forgot")

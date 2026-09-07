@@ -1,5 +1,6 @@
 package com.armaan.auth.controllers;
 
+import com.armaan.auth.dtos.RegisterRequest;
 import com.armaan.auth.dtos.UserDto;
 import com.armaan.auth.services.UserService;
 import lombok.AllArgsConstructor;
@@ -15,7 +16,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> createUser(@RequestBody RegisterRequest userDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(userDto));
     }
 

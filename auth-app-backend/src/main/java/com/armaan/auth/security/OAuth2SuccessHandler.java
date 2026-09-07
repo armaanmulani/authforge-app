@@ -5,6 +5,7 @@ import com.armaan.auth.models.RefreshToken;
 import com.armaan.auth.models.User;
 import com.armaan.auth.repositories.RefreshTokenRepository;
 import com.armaan.auth.repositories.UserRepository;
+import com.armaan.auth.services.EmailService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,6 +27,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
+    private final EmailService emailService;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -66,7 +68,19 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                         .provider(Provider.GOOGLE)
                         .build();
 
-                user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(newUser));
+                var existingUser = userRepository.findByEmail(email);
+
+                if (existingUser.isPresent()) {
+                    user = existingUser.get();
+                } else {
+                    user = userRepository.save(newUser);
+
+                    emailService.sendWelcomeEmail(
+                            user.getEmail(),
+                            user.getName(),
+                            user.getProvider()
+                    );
+                }
             }
 
             case "github" -> {
@@ -88,7 +102,19 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                         .provider(Provider.GITHUB)
                         .build();
 
-                user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(newUser));
+                var existingUser = userRepository.findByEmail(email);
+
+                if (existingUser.isPresent()) {
+                    user = existingUser.get();
+                } else {
+                    user = userRepository.save(newUser);
+
+                    emailService.sendWelcomeEmail(
+                            user.getEmail(),
+                            user.getName(),
+                            user.getProvider()
+                    );
+                }
             }
 
             default -> {
