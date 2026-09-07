@@ -41,7 +41,7 @@ import { Alert, AlertTitle } from "@/components/ui/alert";
 
 import useAuth from "@/services/Store";
 
-import { deleteUser, logoutUser } from "@/services/AuthService";
+import { deleteUser } from "@/services/AuthService";
 
 import toast from "react-hot-toast";
 
@@ -397,11 +397,11 @@ export default function UserProfile() {
                     >
                       <span
                         className={`size-2 rounded-full ${
-                          user?.isEnabled ? "bg-primary" : "bg-muted-foreground"
+                          user?.enabled ? "bg-primary" : "bg-muted-foreground"
                         }`}
                       />
 
-                      {user?.isEnabled ? "Active" : "Disabled"}
+                      {user?.enabled ? "Active" : "Disabled"}
                     </span>
                   </div>
                 </div>
