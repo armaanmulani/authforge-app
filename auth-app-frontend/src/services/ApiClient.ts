@@ -69,7 +69,7 @@ apiClient.interceptors.response.use(
       original.headers.Authorization = `Bearer ${newToken}`;
       return apiClient(original);
     } catch (error) {
-      resolveQueue("null");
+      resolveQueue(null);
       useAuth.getState().logout();
       return Promise.reject(error);
     } finally {

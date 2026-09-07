@@ -18,7 +18,7 @@ function OAuth2Buttons() {
         whileTap={{ scale: 0.98 }}
       >
         <NavLink
-          to={`${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`}
+          to={`${import.meta.env.VITE_BASE_URL}/oauth2/authorization/google`}
         >
           <Button
             type="button"
@@ -43,7 +43,7 @@ function OAuth2Buttons() {
         whileTap={{ scale: 0.98 }}
       >
         <NavLink
-          to={`${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/github`}
+          to={`${import.meta.env.VITE_BASE_URL}/oauth2/authorization/github`}
         >
           <Button
             type="button"
