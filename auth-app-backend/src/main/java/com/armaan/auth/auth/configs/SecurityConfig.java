@@ -47,8 +47,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeHttpRequests ->
                         authorizeHttpRequests
                                 .requestMatchers(AppConstants.AUTH_PUBLIC_URLS).permitAll()
-                                .requestMatchers(AppConstants.AUTH_ADMIN_URLS).hasRole(AppConstants.ROLE_ADMIN)
-                                .requestMatchers(AppConstants.AUTH_GUEST_URLS).hasRole(AppConstants.ROLE_GUEST)
                                 .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 ->
