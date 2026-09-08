@@ -55,6 +55,14 @@ export const verifyOtp = async (email: string, otp: string) => {
   return response.data;
 };
 
+export const updateProfile = async (name: string) => {
+  const response = await apiClient.patch("users/profile", {
+    name,
+  });
+
+  return response.data;
+};
+
 export const resetPassword = async (
   resetToken: string,
   newPassword: string,
@@ -74,6 +82,20 @@ export const changePassword = async (
   const response = await apiClient.patch("users/password", {
     currentPassword,
     newPassword,
+  });
+
+  return response.data;
+};
+
+export const uploadProfileImage = async (file: File) => {
+  const formData = new FormData();
+
+  formData.append("image", file);
+
+  const response = await apiClient.post("users/profile/image", formData, {
+    headers: {
+      "Content-Type": undefined,
+    },
   });
 
   return response.data;

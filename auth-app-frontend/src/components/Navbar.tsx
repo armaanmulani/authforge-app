@@ -2,17 +2,32 @@ import { NavLink, useNavigate } from "react-router";
 import { Button } from "./ui/button";
 import useAuth from "@/services/Store";
 import { useEffect, useState } from "react";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, LogOut } from "lucide-react";
+import toast from "react-hot-toast";
+import { Spinner } from "./ui/spinner";
 
 function Navbar() {
   const checkLogin = useAuth((state) => state.checkLogin);
-  const user = useAuth((state) => state.user);
   const logout = useAuth((state) => state.logout);
   const navigate = useNavigate();
 
+  const [loading, setLoading] = useState(false);
   const [isDark, setIsDark] = useState(() => {
-    return localStorage.getItem("theme") === "dark";
+    const savedTheme = localStorage.getItem("theme");
+
+    return savedTheme ? savedTheme === "dark" : true;
   });
+  const handleLogout = async () => {
+    try {
+      setLoading(true);
+      await logout();
+      toast.success("Logged out successfully!");
+    } catch (error) {
+      toast.error("Something went wrong!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const root = document.documentElement;
@@ -51,17 +66,23 @@ function Navbar() {
         {checkLogin() ? (
           <>
             <NavLink to={"/dashboard"}>Dashboard</NavLink>
-            <NavLink to={"#"}>{user?.name}</NavLink>
+            <NavLink
+              to="/about"
+              className="transition-colors hover:text-primary"
+            >
+              About
+            </NavLink>
             <Button
               size={"sm"}
               className={"cursor-pointer"}
               variant={"outline"}
               onClick={() => {
-                logout();
+                handleLogout();
                 navigate("/");
               }}
             >
-              Logout
+              <LogOut />
+              {loading ? <Spinner /> : <>Logout</>}
             </Button>
           </>
         ) : (

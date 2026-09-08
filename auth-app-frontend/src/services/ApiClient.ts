@@ -1,5 +1,7 @@
 import axios from "axios";
+
 import useAuth from "./Store";
+
 import { refreshToken } from "./AuthService";
 
 const apiClient = axios.create({
@@ -13,13 +15,16 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use((config) => {
   const accessToken = useAuth.getState().accessToken;
+
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
+
   return config;
 });
 
 let isRefreshing = false;
+
 let pending: Array<(token: string | null) => void> = [];
 
 function queueRequest(cb: (token: string | null) => void) {
@@ -33,31 +38,58 @@ function resolveQueue(newToken: string | null) {
 
 apiClient.interceptors.response.use(
   (response) => response,
+
   async (error) => {
     console.log(error);
-    const isUnauthorized = error.response.status === 401;
+
+    const isUnauthorized = error.response?.status === 401;
     const original = error.config;
-    if (!isUnauthorized || original._retry) {
+
+    // Don't try to refresh authentication endpoints
+    const requestUrl = original?.url ?? "";
+
+    const isAuthRequest =
+      requestUrl.includes("/auth/login") ||
+      requestUrl.includes("/auth/register") ||
+      requestUrl.includes("/auth/refresh");
+
+    // Only refresh for 401 responses from normal protected requests
+    if (!isUnauthorized || isAuthRequest || original?._retry) {
       return Promise.reject(error);
     }
 
     original._retry = true;
+
     if (isRefreshing) {
       console.log("Already refreshing...");
+
       return new Promise((resolve, reject) => {
-        queueRequest((newToken: any) => {
-          if (!newToken) return reject();
+        queueRequest((newToken: string | null) => {
+          if (!newToken) {
+            reject(error);
+            return;
+          }
+
           original.headers.Authorization = `Bearer ${newToken}`;
+
           resolve(apiClient(original));
         });
       });
     }
+
     isRefreshing = true;
+
     try {
       console.log("Start refreshing...");
+
       const loginResponse = await refreshToken();
+
       const newToken = loginResponse.accessToken;
-      if (!newToken) throw new Error("No access token recieved!");
+
+      if (!newToken) {
+        throw new Error("No access token received!");
+      }
+
       useAuth
         .getState()
         .changeLocalLoginData(
@@ -65,12 +97,17 @@ apiClient.interceptors.response.use(
           loginResponse.user,
           true,
         );
+
       resolveQueue(newToken);
+
       original.headers.Authorization = `Bearer ${newToken}`;
+
       return apiClient(original);
     } catch (error) {
       resolveQueue(null);
+
       useAuth.getState().logout();
+
       return Promise.reject(error);
     } finally {
       isRefreshing = false;

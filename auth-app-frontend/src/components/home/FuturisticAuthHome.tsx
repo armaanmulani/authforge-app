@@ -160,12 +160,6 @@ export default function FuturisticAuthHome() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="py-10 text-center text-muted-foreground border-t border-border">
-        © {new Date().getFullYear()} AuthForge - Armaan Mulani. All rights
-        reserved.
-      </footer>
     </div>
   );
 }

@@ -1,23 +1,62 @@
 import { motion } from "framer-motion";
 import {
+  Activity,
   Bell,
-  FolderKanban,
+  ChevronRight,
   Home,
+  KeyRound,
   LineChart,
+  LogIn,
   Search,
   Settings,
+  ShieldCheck,
+  UserPlus,
   Users,
+  type LucideIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import useAuth from "@/services/Store";
 import { useNavigate } from "react-router";
-import { getCurrUser } from "@/services/AuthService";
-import { useState } from "react";
-import type User from "@/models/User";
-import toast from "react-hot-toast";
+
+const recentActivity = [
+  {
+    type: "login",
+    title: "Successful login",
+    description: "Google OAuth authentication",
+    time: "Just now",
+    icon: LogIn,
+  },
+  {
+    type: "user",
+    title: "New user registered",
+    description: "Account created successfully",
+    time: "12 min ago",
+    icon: UserPlus,
+  },
+  {
+    type: "security",
+    title: "Password updated",
+    description: "Account security settings changed",
+    time: "2h ago",
+    icon: KeyRound,
+  },
+  {
+    type: "system",
+    title: "Authentication service",
+    description: "All systems operational",
+    time: "5h ago",
+    icon: ShieldCheck,
+  },
+];
 
 const navigationItems = [
   {
@@ -26,18 +65,23 @@ const navigationItems = [
     active: true,
   },
   {
-    label: "Analytics",
-    icon: LineChart,
+    label: "Authentication",
+    icon: KeyRound,
     active: false,
   },
   {
-    label: "Customers",
+    label: "Users",
     icon: Users,
     active: false,
   },
   {
-    label: "Projects",
-    icon: FolderKanban,
+    label: "Security",
+    icon: ShieldCheck,
+    active: false,
+  },
+  {
+    label: "Analytics",
+    icon: LineChart,
     active: false,
   },
   {
@@ -47,57 +91,38 @@ const navigationItems = [
   },
 ];
 
-const projects = [
-  {
-    name: "Project Alpha",
-    status: "Active",
-    owner: "Aditi",
-    updated: "Today",
-  },
-  {
-    name: "Campaign Nova",
-    status: "Active",
-    owner: "Rohit",
-    updated: "2d ago",
-  },
-  {
-    name: "Archive 2024",
-    status: "Archived",
-    owner: "Neha",
-    updated: "1w ago",
-  },
-  {
-    name: "Website Redesign",
-    status: "Active",
-    owner: "Arjun",
-    updated: "3h ago",
-  },
-];
+const getInitials = (name?: string) => {
+  if (!name?.trim()) return "U";
+
+  return name
+    .trim()
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+};
 
 const UserHome = () => {
   const user = useAuth((state) => state.user);
   const navigate = useNavigate();
-  const [currUser, setCurrUser] = useState<User | null>(null);
-  const getUserData = async () => {
-    try {
-      const currUser = await getCurrUser(user?.email);
-      toast.success("Access granted!");
-      setCurrUser(currUser);
-    } catch (error) {
-      console.log(error);
-      toast.error("Error occured!");
-    }
-  };
+
   return (
     <div className="min-h-[calc(100vh-73px)] bg-background text-foreground">
       {/* ==================== SIDEBAR ==================== */}
 
       <aside className="fixed bottom-0 left-0 top-18.25 z-40 hidden w-64 border-r border-border/60 bg-card/40 backdrop-blur-xl lg:block">
         {/* Sidebar Header */}
-        <div className="flex h-14 items-center gap-2 border-b border-border/60 px-4">
-          <span className="inline-block text-center h-6 w-6 rounded-md bg-linear-to-r from-primary to-primary/40"></span>
+        <div className="flex h-16 items-center gap-3 border-b border-border/60 px-5">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+            <ShieldCheck className="size-4" />
+          </div>
 
-          <span className="font-semibold">Auth Admin</span>
+          <div className="leading-tight">
+            <p className="text-sm font-semibold tracking-tight">AuthForge</p>
+
+            <p className="text-[11px] text-muted-foreground">Admin Console</p>
+          </div>
         </div>
 
         {/* Navigation */}
@@ -154,22 +179,25 @@ const UserHome = () => {
 
           {/* User */}
           <Button
-            onClick={() => {
-              navigate("/dashboard/profile");
-            }}
-            variant="outline"
-            className="h-9 cursor-pointer gap-2"
+            onClick={() => navigate("/dashboard/profile")}
+            variant="ghost"
+            className="h-9 cursor-pointer gap-2 px-2"
           >
-            <img
-              src={user?.image}
-              onError={(e) => {
-                e.currentTarget.src =
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIlA6bJtRIjslWV6Sh-l2BHcvtVEbDbV236R-_ONObVg&s=10";
-              }}
-              className="flex size-6 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary"
-            />
+            {user?.image ? (
+              <img
+                src={user.image}
+                alt={user.name || "User"}
+                className="size-7 rounded-full object-cover ring-1 ring-border"
+              />
+            ) : (
+              <div className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary ring-1 ring-border">
+                {getInitials(user?.name)}
+              </div>
+            )}
 
-            <span className="hidden sm:inline">{user?.name}</span>
+            <span className="hidden max-w-32 truncate text-sm font-medium sm:inline">
+              {user?.name || "User"}
+            </span>
           </Button>
         </div>
 
@@ -180,189 +208,203 @@ const UserHome = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+            className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
           >
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Overview
+              <div className="mb-2 flex items-center gap-2">
+                <span className="size-2 rounded-full bg-primary shadow-[0_0_10px] shadow-primary/60" />
+
+                <span className="text-xs font-medium uppercase tracking-wider text-primary">
+                  System Operational
+                </span>
+              </div>
+
+              <h1 className="text-3xl font-bold tracking-tight">
+                Welcome back, {user?.name?.split(" ")[0] || "there"}!
               </h1>
 
-              <p className="mt-1 text-sm text-muted-foreground">
-                Quick insights for your project.
+              <p className="mt-2 text-sm text-muted-foreground">
+                Here's what's happening with your AuthForge system.
               </p>
             </div>
 
-            <Button className="w-fit cursor-pointer" onClick={getUserData}>
-              Get current user
+            <Button
+              variant="outline"
+              className="w-fit cursor-pointer"
+              onClick={() => navigate("/dashboard/profile")}
+            >
+              <Settings className="size-4" />
+              Manage Account
             </Button>
-            <p>{currUser?.name}</p>
           </motion.div>
 
           {/* ==================== STAT CARDS ==================== */}
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <StatCard
-              title="Revenue"
-              subtitle="Last 7 days"
-              value="$24,120"
-              change="▲ 4.2% this week"
+              title="Total Users"
+              subtitle="Registered accounts"
+              value="8,420"
+              change="+4.2% this month"
+              icon={Users}
               delay={0}
             />
 
             <StatCard
-              title="Orders"
-              subtitle="Last 7 days"
+              title="Active Sessions"
+              subtitle="Currently authenticated"
               value="1,238"
-              change="▲ 1.1%"
+              change="+1.1% today"
+              icon={Activity}
               delay={0.1}
             />
 
             <StatCard
-              title="Active Users"
-              subtitle="Last 7 days"
-              value="8,420"
-              change="▼ 0.6%"
+              title="Authentication"
+              subtitle="Successful requests"
+              value="99.97%"
+              change="Healthy"
+              icon={ShieldCheck}
               delay={0.2}
             />
 
-            {/* Uptime */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                delay: 0.3,
-                duration: 0.5,
-              }}
-            >
-              <Card className="h-full border-border/60 bg-card/60 backdrop-blur-xl">
-                <CardContent className="p-6">
-                  <p className="font-semibold">Uptime</p>
-
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    Last 7 days
-                  </p>
-
-                  <p className="mt-8 text-3xl font-semibold tracking-tight">
-                    99.97%
-                  </p>
-
-                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: "99.97%" }}
-                      transition={{
-                        delay: 0.6,
-                        duration: 1,
-                        ease: "easeOut",
-                      }}
-                      className="h-full rounded-full bg-primary"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <StatCard
+              title="New Users"
+              subtitle="Last 7 days"
+              value="284"
+              change="+12.8%"
+              icon={UserPlus}
+              delay={0.3}
+            />
           </div>
 
           {/* ==================== PROJECTS ==================== */}
 
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 0.45,
-              duration: 0.6,
-            }}
-            className="mt-6"
-          >
-            <Card className="overflow-hidden border-border/60 bg-card/60 backdrop-blur-xl">
-              {/* Tabs */}
-              <div className="flex items-center justify-between border-b border-border/60 p-4">
-                <div className="flex items-center gap-1 rounded-lg bg-muted/60 p-1">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="h-8 cursor-pointer"
-                  >
-                    All
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 cursor-pointer text-muted-foreground"
-                  >
-                    Active
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 cursor-pointer text-muted-foreground"
-                  >
-                    Archived
-                  </Button>
+          {/* Recent Activity + Quick Actions */}
+          <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+            {/* Recent Authentication Activity */}
+            <Card className="border-border/60 bg-card/60 backdrop-blur-xl">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">
+                    Recent Authentication Activity
+                  </CardTitle>
+                  <CardDescription>
+                    Latest activity across your AuthForge system
+                  </CardDescription>
                 </div>
 
-                <span className="text-sm text-muted-foreground">
-                  Showing 4 results
-                </span>
-              </div>
+                <Button variant="ghost" size="sm" className="gap-1">
+                  View all
+                  <ChevronRight className="size-4" />
+                </Button>
+              </CardHeader>
 
-              {/* Desktop Table */}
-              <div className="hidden md:block">
-                <div className="grid grid-cols-[2fr_1fr_1fr_100px] border-b border-border/60 px-4 py-3 text-sm font-medium">
-                  <span>Name</span>
-                  <span>Status</span>
-                  <span>Owner</span>
-                  <span className="text-right">Updated</span>
-                </div>
+              <CardContent className="space-y-2">
+                {recentActivity.map((activity, index) => {
+                  const Icon = activity.icon;
 
-                {projects.map((project, index) => (
-                  <motion.div
-                    key={project.name}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{
-                      delay: 0.55 + index * 0.08,
-                    }}
-                    className="grid grid-cols-[2fr_1fr_1fr_100px] items-center border-b border-border/50 px-4 py-3 text-sm last:border-b-0 transition-colors hover:bg-muted/30"
-                  >
-                    <span className="font-medium">{project.name}</span>
+                  return (
+                    <motion.div
+                      key={activity.title}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.08 }}
+                      className="flex items-center gap-4 rounded-xl border border-transparent p-3 transition-colors hover:border-border/60 hover:bg-muted/40"
+                    >
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/40">
+                        <Icon className="size-4 text-primary" />
+                      </div>
 
-                    <span>
-                      <StatusBadge status={project.status} />
-                    </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium">{activity.title}</p>
 
-                    <span>{project.owner}</span>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {activity.description}
+                        </p>
+                      </div>
 
-                    <span className="text-right text-muted-foreground">
-                      {project.updated}
-                    </span>
-                  </motion.div>
-                ))}
-              </div>
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {activity.time}
+                      </span>
+                    </motion.div>
+                  );
+                })}
+              </CardContent>
+            </Card>
 
-              {/* Mobile */}
-              <div className="divide-y divide-border/50 md:hidden">
-                {projects.map((project) => (
-                  <div
-                    key={project.name}
-                    className="flex items-center justify-between p-4"
-                  >
-                    <div>
-                      <p className="font-medium">{project.name}</p>
+            {/* Quick Actions */}
+            <Card className="border-border/60 bg-card/60 backdrop-blur-xl">
+              <CardHeader>
+                <CardTitle className="text-base">Quick Actions</CardTitle>
+                <CardDescription>
+                  Manage your authentication system
+                </CardDescription>
+              </CardHeader>
 
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {project.owner} · {project.updated}
-                      </p>
+              <CardContent className="space-y-3">
+                <Button
+                  variant="outline"
+                  className="h-auto w-full justify-between p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+                      <Users className="size-4 text-primary" />
                     </div>
 
-                    <StatusBadge status={project.status} />
+                    <div className="text-left">
+                      <p className="text-sm font-medium">Manage Users</p>
+                      <p className="text-xs text-muted-foreground">
+                        View and manage accounts
+                      </p>
+                    </div>
                   </div>
-                ))}
-              </div>
+
+                  <ChevronRight className="size-4 text-muted-foreground" />
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="h-auto w-full justify-between p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+                      <ShieldCheck className="size-4 text-primary" />
+                    </div>
+
+                    <div className="text-left">
+                      <p className="text-sm font-medium">Security</p>
+                      <p className="text-xs text-muted-foreground">
+                        Review security settings
+                      </p>
+                    </div>
+                  </div>
+
+                  <ChevronRight className="size-4 text-muted-foreground" />
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="h-auto w-full justify-between p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+                      <KeyRound className="size-4 text-primary" />
+                    </div>
+
+                    <div className="text-left">
+                      <p className="text-sm font-medium">Authentication</p>
+                      <p className="text-xs text-muted-foreground">
+                        Configure authentication
+                      </p>
+                    </div>
+                  </div>
+
+                  <ChevronRight className="size-4 text-muted-foreground" />
+                </Button>
+              </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </div>
       </main>
     </div>
@@ -377,9 +419,17 @@ interface StatCardProps {
   value: string;
   change: string;
   delay: number;
+  icon: LucideIcon;
 }
 
-const StatCard = ({ title, subtitle, value, change, delay }: StatCardProps) => {
+const StatCard = ({
+  title,
+  subtitle,
+  value,
+  change,
+  delay,
+  icon: Icon,
+}: StatCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -389,44 +439,43 @@ const StatCard = ({ title, subtitle, value, change, delay }: StatCardProps) => {
         duration: 0.5,
       }}
       whileHover={{
-        y: -3,
+        y: -4,
         transition: {
           duration: 0.2,
         },
       }}
     >
-      <Card className="h-full border-border/60 bg-card/60 backdrop-blur-xl transition-shadow duration-300 hover:shadow-lg">
-        <CardContent className="p-6">
-          <p className="font-semibold">{title}</p>
+      <Card className="group h-full overflow-hidden border-border/60 bg-card/60 backdrop-blur-xl transition-all duration-300 hover:border-primary/30 hover:shadow-xl">
+        <CardContent className="relative p-5">
+          <div className="absolute right-4 top-4 size-20 rounded-full bg-primary/5 blur-2xl transition-all group-hover:bg-primary/10" />
 
-          <p className="mt-3 text-sm text-muted-foreground">{subtitle}</p>
+          <div className="relative flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                {title}
+              </p>
 
-          <p className="mt-8 text-3xl font-semibold tracking-tight">{value}</p>
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                {subtitle}
+              </p>
+            </div>
+            <div className="flex size-9 items-center justify-center rounded-lg border border-border/60 bg-muted/40">
+              <Icon className="size-4 text-primary" />
+            </div>
+          </div>
 
-          <span className="mt-3 inline-flex rounded-md bg-muted px-2 py-1 text-xs font-medium">
-            {change}
-          </span>
+          <p className="relative mt-7 text-3xl font-bold tracking-tight">
+            {value}
+          </p>
+
+          <div className="relative mt-3 flex items-center gap-2">
+            <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+              {change}
+            </span>
+          </div>
         </CardContent>
       </Card>
     </motion.div>
-  );
-};
-
-/* ==================== STATUS BADGE ==================== */
-
-const StatusBadge = ({ status }: { status: string }) => {
-  const active = status === "Active";
-
-  return (
-    <span
-      className={`inline-flex rounded-md px-2.5 py-1 text-xs font-medium ${
-        active
-          ? "bg-primary text-primary-foreground"
-          : "bg-muted text-muted-foreground"
-      }`}
-    >
-      {status}
-    </span>
   );
 };
 

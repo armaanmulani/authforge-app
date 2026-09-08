@@ -16,6 +16,7 @@ type AuthState = {
   user: User | null;
   authStatus: boolean;
   authLoading: boolean;
+  updateUser: (user: User) => void;
   login: (LoginData: LoginData) => Promise<LoginResponseData>;
   logout: (options?: { silent?: boolean }) => void;
   checkLogin: () => boolean;
@@ -33,6 +34,9 @@ const useAuth = create<AuthState>()(
       user: null,
       authStatus: false,
       authLoading: false,
+      updateUser: (user) => {
+        set({ user });
+      },
       login: async (loginData) => {
         console.log("Started login...");
         set({ authLoading: true });

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 
 import { motion, AnimatePresence } from "framer-motion";
 
+import { Spinner } from "@/components/ui/spinner";
+
 import {
   AlertCircleIcon,
   Camera,
@@ -52,7 +54,12 @@ import { Alert, AlertTitle } from "@/components/ui/alert";
 
 import useAuth from "@/services/Store";
 
-import { changePassword, deleteUser } from "@/services/AuthService";
+import {
+  changePassword,
+  deleteUser,
+  updateProfile,
+  uploadProfileImage,
+} from "@/services/AuthService";
 
 import toast from "react-hot-toast";
 
@@ -61,6 +68,7 @@ import { useNavigate } from "react-router";
 export default function UserProfile() {
   const user = useAuth((state) => state.user);
   const logout = useAuth((state) => state.logout);
+  const updateUser = useAuth((state) => state.updateUser);
 
   const navigate = useNavigate();
 
@@ -79,6 +87,9 @@ export default function UserProfile() {
     email: "",
     image: "",
   });
+
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // ============================================================
   // CHANGE PASSWORD STATE
@@ -116,6 +127,14 @@ export default function UserProfile() {
     }
   }, [user]);
 
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
   // ============================================================
   // PROFILE HANDLERS
   // ============================================================
@@ -148,17 +167,53 @@ export default function UserProfile() {
         image: user.image ?? "",
       });
     }
-
+    setSelectedImage(null);
+    setImagePreview(null);
     setIsEditing(false);
     setError(null);
   };
 
-  const handleSaveProfile = () => {
-    console.log("Updated profile:", profile);
+  const handleSaveProfile = async () => {
+    if (!profile.name.trim()) {
+      toast.error("Name is required.");
+      return;
+    }
 
-    toast.success("Profile updated successfully!");
+    try {
+      setLoading(true);
+      setError(null);
 
-    setIsEditing(false);
+      // Update profile information
+      const updatedUser = await updateProfile(profile.name.trim());
+
+      updateUser(updatedUser);
+
+      // Upload image if a new image was selected
+      if (selectedImage) {
+        const updatedUserWithImage = await uploadProfileImage(selectedImage);
+
+        updateUser(updatedUserWithImage);
+
+        setProfile((current) => ({
+          ...current,
+          image: updatedUserWithImage.image ?? "",
+        }));
+      }
+
+      setSelectedImage(null);
+      setImagePreview(null);
+
+      toast.success("Profile updated successfully!");
+      setIsEditing(false);
+    } catch (error: any) {
+      setError(error);
+
+      toast.error(
+        error?.response?.data?.message || "Failed to update your profile.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ============================================================
@@ -170,15 +225,22 @@ export default function UserProfile() {
 
     if (!file) return;
 
-    const reader = new FileReader();
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
 
-    reader.onloadend = () => {
-      if (typeof reader.result === "string") {
-        handleChange("image", reader.result);
-      }
-    };
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Only JPG, PNG, and WebP images are allowed.");
+      event.target.value = "";
+      return;
+    }
 
-    reader.readAsDataURL(file);
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must not exceed 5 MB.");
+      event.target.value = "";
+      return;
+    }
+
+    setSelectedImage(file);
+    setImagePreview(URL.createObjectURL(file));
   };
 
   // ============================================================
@@ -376,9 +438,9 @@ export default function UserProfile() {
                 <AlertCircleIcon />
 
                 <AlertTitle>
-                  {error?.response
-                    ? error?.response?.data?.message
-                    : error?.message}
+                  {error?.response?.data?.message ||
+                    error?.message ||
+                    "Something went wrong while updating your profile."}
                 </AlertTitle>
               </Alert>
             </motion.div>
@@ -433,9 +495,18 @@ export default function UserProfile() {
 
               <motion.div layout className="flex flex-col items-center gap-3">
                 <div className="relative">
-                  <Avatar className="size-28 border border-border shadow-lg">
+                  <Avatar
+                    className={`size-28 border border-border shadow-lg ${
+                      loading ? "opacity-60" : ""
+                    }`}
+                  >
+                    {loading && (
+                      <div className="absolute inset-0 flex items-center justify-center rounded-full bg-background/50 backdrop-blur-sm">
+                        <Spinner className="size-6" />
+                      </div>
+                    )}
                     <AvatarImage
-                      src={profile.image || undefined}
+                      src={imagePreview || profile.image || undefined}
                       alt={profile.name || "User"}
                     />
 
@@ -448,7 +519,8 @@ export default function UserProfile() {
                     <>
                       <label
                         htmlFor="profile-picture"
-                        className="absolute bottom-0 right-0 flex size-9 cursor-pointer items-center justify-center rounded-full border border-border bg-background shadow-md transition-all hover:scale-105 hover:bg-accent"
+                        className="absolute bottom-0 right-0 flex size-10 cursor-pointer items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105 hover:bg-primary/90"
+                        title="Change profile picture"
                       >
                         <Camera className="size-4" />
                       </label>
@@ -465,8 +537,10 @@ export default function UserProfile() {
                 </div>
 
                 {isEditing && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-center text-xs text-muted-foreground">
                     Click the camera icon to change your picture.
+                    <br />
+                    JPG, PNG or WebP · Max 5 MB
                   </p>
                 )}
               </motion.div>
@@ -509,10 +583,7 @@ export default function UserProfile() {
                       id="email"
                       type="email"
                       value={profile.email}
-                      disabled={!isEditing}
-                      onChange={(event) =>
-                        handleChange("email", event.target.value)
-                      }
+                      disabled
                       placeholder="you@example.com"
                       className="pl-10"
                     />
@@ -585,6 +656,7 @@ export default function UserProfile() {
                       variant="outline"
                       className="flex-1 cursor-pointer"
                       onClick={handleCancelEditing}
+                      disabled={loading}
                     >
                       <X className="size-4" />
                       Cancel
@@ -594,9 +666,19 @@ export default function UserProfile() {
                       type="button"
                       className="flex-1 cursor-pointer"
                       onClick={handleSaveProfile}
+                      disabled={loading}
                     >
-                      <Check className="size-4" />
-                      Save Profile
+                      {loading ? (
+                        <>
+                          <Spinner />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="size-4" />
+                          Save Profile
+                        </>
+                      )}
                     </Button>
                   </motion.div>
                 )}
