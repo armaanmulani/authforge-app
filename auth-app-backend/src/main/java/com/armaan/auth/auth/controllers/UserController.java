@@ -1,12 +1,15 @@
 package com.armaan.auth.auth.controllers;
 
 import com.armaan.auth.auth.payloads.RegisterRequest;
+import com.armaan.auth.auth.payloads.UpdateProfileRequest;
 import com.armaan.auth.auth.payloads.UserDto;
 import com.armaan.auth.auth.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -16,8 +19,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@RequestBody RegisterRequest userDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(userDto));
+    public ResponseEntity<UserDto> createUser(
+            @RequestBody RegisterRequest request
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(userService.createUser(request));
     }
 
     @GetMapping
@@ -26,24 +33,49 @@ public class UserController {
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<UserDto> getUserByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(userService.getUserByEmail(email));
+    public ResponseEntity<UserDto> getUserByEmail(
+            @PathVariable String email
+    ) {
+        return ResponseEntity.ok(
+                userService.getUserByEmail(email)
+        );
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDto> getUserById(
+            @PathVariable String userId
+    ) {
+        return ResponseEntity.ok(
+                userService.getUserById(userId)
+        );
     }
 
     @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable("userId") String userId) {
+    public ResponseEntity<Void> deleteUser(
+            @PathVariable String userId
+    ) {
         userService.deleteUserById(userId);
+        return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{userId}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable("userId") String userId, @RequestBody UserDto userDto) {
-        return ResponseEntity.ok(userService.updateUser(userDto, userId));
+    @PatchMapping("/profile")
+    public ResponseEntity<UserDto> updateProfile(
+            @RequestBody UpdateProfileRequest request
+    ) {
+        return ResponseEntity.ok(
+                userService.updateProfile(request)
+        );
     }
 
-    // @PreAuthorize("hasRole('" + AppConstants.ROLE_ADMIN + "')")
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable("userId") String userId) {
-        return ResponseEntity.ok(userService.getUserById(userId));
+    @PostMapping(
+            value = "/profile/image",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<UserDto> updateProfileImage(
+            @RequestParam("image") MultipartFile image
+    ) {
+        return ResponseEntity.ok(
+                userService.updateProfileImage(image)
+        );
     }
-
 }

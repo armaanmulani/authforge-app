@@ -1,7 +1,9 @@
 package com.armaan.auth.auth.services;
 
 import com.armaan.auth.auth.payloads.RegisterRequest;
+import com.armaan.auth.auth.payloads.UpdateProfileRequest;
 import com.armaan.auth.auth.payloads.UserDto;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
 
@@ -9,12 +11,13 @@ public interface UserService {
 
     UserDto getUserByEmail(String email);
 
-    UserDto updateUser(UserDto userDto, String userId);
+    UserDto updateProfile(UpdateProfileRequest request);
+
+    UserDto updateProfileImage(MultipartFile file);
 
     void deleteUserById(String userId);
 
     UserDto getUserById(String userId);
 
     Iterable<UserDto> getAllUsers();
-
 }
