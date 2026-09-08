@@ -91,7 +91,7 @@ function About() {
               </Link>
 
               <a
-                href="https://github.com/armaanmulani"
+                href="https://github.com/armaanmulani/authforge-app"
                 target="_blank"
                 rel="noopener noreferrer"
               >
