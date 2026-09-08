@@ -1,7 +1,5 @@
 import axios from "axios";
-
 import useAuth from "./Store";
-
 import { refreshToken } from "./AuthService";
 
 const apiClient = axios.create({
@@ -24,6 +22,7 @@ apiClient.interceptors.request.use((config) => {
 });
 
 let isRefreshing = false;
+let refreshFailed = false;
 
 let pending: Array<(token: string | null) => void> = [];
 
@@ -40,21 +39,22 @@ apiClient.interceptors.response.use(
   (response) => response,
 
   async (error) => {
-    console.log(error);
+    console.log("Axios error:", error);
 
     const isUnauthorized = error.response?.status === 401;
     const original = error.config;
 
-    // Don't try to refresh authentication endpoints
     const requestUrl = original?.url ?? "";
 
+    // Never try to refresh authentication endpoints
     const isAuthRequest =
       requestUrl.includes("/auth/login") ||
       requestUrl.includes("/auth/register") ||
-      requestUrl.includes("/auth/refresh");
+      requestUrl.includes("/auth/refresh") ||
+      requestUrl.includes("/auth/logout");
 
-    // Only refresh for 401 responses from normal protected requests
-    if (!isUnauthorized || isAuthRequest || original?._retry) {
+    // Only refresh normal protected requests
+    if (!isUnauthorized || isAuthRequest || original?._retry || refreshFailed) {
       return Promise.reject(error);
     }
 
@@ -64,7 +64,7 @@ apiClient.interceptors.response.use(
       console.log("Already refreshing...");
 
       return new Promise((resolve, reject) => {
-        queueRequest((newToken: string | null) => {
+        queueRequest((newToken) => {
           if (!newToken) {
             reject(error);
             return;
@@ -90,6 +90,8 @@ apiClient.interceptors.response.use(
         throw new Error("No access token received!");
       }
 
+      refreshFailed = false;
+
       useAuth
         .getState()
         .changeLocalLoginData(
@@ -103,12 +105,16 @@ apiClient.interceptors.response.use(
       original.headers.Authorization = `Bearer ${newToken}`;
 
       return apiClient(original);
-    } catch (error) {
+    } catch (refreshError) {
+      console.log("Refresh token failed:", refreshError);
+
+      refreshFailed = true;
+
       resolveQueue(null);
 
       useAuth.getState().logout();
 
-      return Promise.reject(error);
+      return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
     }
