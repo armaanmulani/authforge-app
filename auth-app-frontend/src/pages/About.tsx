@@ -222,27 +222,38 @@ function About() {
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button variant="outline" className="gap-2">
-                  <FaGithub className="size-4" />
-                  GitHub
-                </Button>
+                <a href="https://github.com/armaanmulani" target="_blank">
+                  <Button variant="outline" className="gap-2 cursor-pointer">
+                    <FaGithub className="size-4" />
+                    GitHub
+                  </Button>
+                </a>
 
-                <Button variant="outline">LinkedIn</Button>
+                <a
+                  href="https://www.linkedin.com/in/armaanmulani/"
+                  target="_blank"
+                >
+                  <Button variant="outline" className={"cursor-pointer"}>
+                    LinkedIn
+                  </Button>
+                </a>
               </div>
             </div>
 
             <div className="flex items-center justify-center border-t border-border/60 bg-muted/20 p-8 md:border-l md:border-t-0">
-              <div className="text-center">
-                <div className="mx-auto flex size-20 items-center justify-center rounded-2xl bg-linear-to-br from-primary to-primary/40 text-2xl font-bold text-primary-foreground shadow-xl">
-                  AM
+              <a href="https://armaanmulani.netlify.app" target="_blank">
+                <div className="text-center">
+                  <div className="mx-auto flex size-20 items-center justify-center rounded-2xl bg-linear-to-br from-primary to-primary/40 text-2xl font-bold text-primary-foreground shadow-xl">
+                    AM
+                  </div>
+
+                  <p className="mt-4 font-semibold">Armaan Mulani</p>
+
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Full-Stack Developer
+                  </p>
                 </div>
-
-                <p className="mt-4 font-semibold">Armaan Mulani</p>
-
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Full-Stack Developer
-                </p>
-              </div>
+              </a>
             </div>
           </div>
         </div>

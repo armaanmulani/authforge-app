@@ -52,7 +52,9 @@ function Footer() {
 
           <p>
             Built by{" "}
-            <span className="font-medium text-foreground">Armaan Mulani</span>
+            <a href="https://armaanmulani.netlify.app" target="_blank">
+              <span className="font-medium text-foreground">Armaan Mulani</span>
+            </a>
           </p>
         </div>
       </div>
