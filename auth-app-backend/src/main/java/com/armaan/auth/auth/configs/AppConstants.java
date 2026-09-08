@@ -7,7 +7,7 @@ public class AppConstants {
             "/v3/api-docs/**",
             "/swagger-ui.html",
             "/swagger-ui/**",
-            "/api/v1/auth/**"
+            "/api/auth/**"
     };
 
     public static final String[] AUTH_ADMIN_URLS = {
@@ -19,5 +19,4 @@ public class AppConstants {
 
     public static final String ROLE_ADMIN = "ADMIN";
     public static final String ROLE_GUEST = "GUEST";
-
 }
