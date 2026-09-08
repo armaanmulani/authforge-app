@@ -34,13 +34,22 @@ export default function FuturisticAuthHome() {
           transition={{ delay: 0.5, duration: 0.8 }}
           className="mt-10 flex gap-4"
         >
-          <Button size="lg" className="rounded-2xl text-lg px-6 cursor-pointer">
+          <Button
+            size="lg"
+            className="rounded-2xl text-lg px-6 cursor-pointer"
+            onClick={() => {
+              navigate("/login");
+            }}
+          >
             Get Started
           </Button>
           <Button
             size="lg"
             variant="outline"
             className="rounded-2xl text-lg px-6 border-border cursor-pointer"
+            onClick={() => {
+              navigate("/about");
+            }}
           >
             Learn More
           </Button>
