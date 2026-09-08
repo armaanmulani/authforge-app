@@ -1,6 +1,5 @@
 import { FiMail } from "react-icons/fi";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
-import { NavLink } from "react-router";
 
 function Footer() {
   return (
