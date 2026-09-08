@@ -17,9 +17,7 @@ function OAuth2Buttons() {
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.98 }}
       >
-        <NavLink
-          to={`${import.meta.env.VITE_BASE_URL}/oauth2/authorization/google`}
-        >
+        <a href="/oauth2/authorization/google">
           <Button
             type="button"
             variant="outline"
@@ -29,7 +27,7 @@ function OAuth2Buttons() {
             <FcGoogle className="size-4" />
             Continue with Google
           </Button>
-        </NavLink>
+        </a>
       </motion.div>
 
       <motion.div
@@ -42,9 +40,7 @@ function OAuth2Buttons() {
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.98 }}
       >
-        <NavLink
-          to={`${import.meta.env.VITE_BASE_URL}/oauth2/authorization/github`}
-        >
+        <a href="/oauth2/authorization/github">
           <Button
             type="button"
             variant="outline"
@@ -54,7 +50,7 @@ function OAuth2Buttons() {
             <FaGithub className="size-4" />
             Continue with GitHub
           </Button>
-        </NavLink>
+        </a>
       </motion.div>
     </div>
   );

@@ -155,7 +155,7 @@ const UserHome = () => {
 
       {/* ==================== MAIN CONTENT ==================== */}
 
-      <main className="lg:pl-64">
+      <main className="ml-0 md:ml-68.75">
         {/* Dashboard Toolbar */}
         <div className="flex h-14 items-center justify-end gap-2 border-b border-border/60 px-4 lg:px-6">
           {/* Search */}
