@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { Button } from "./ui/button";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import { NavLink } from "react-router";
 
 function OAuth2Buttons() {
   return (
