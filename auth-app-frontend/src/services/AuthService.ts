@@ -1,25 +1,36 @@
+import axios from "axios";
+
 import type RegisterData from "@/models/RegisterData";
 import apiClient from "./ApiClient";
+
 import type LoginData from "@/models/LoginData";
 import type LoginResponseData from "@/models/LoginResponseData";
 import type User from "@/models/User";
 
+const refreshClient = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 export const registerUser = async (signupData: RegisterData) => {
-  //api call to server to save data
-  const response = await apiClient.post(`auth/register`, signupData);
+  const response = await apiClient.post("auth/register", signupData);
   return response.data;
 };
 
 export const loginUser = async (loginData: LoginData) => {
   const response = await apiClient.post<LoginResponseData>(
-    `auth/login`,
+    "auth/login",
     loginData,
   );
+
   return response.data;
 };
 
 export const logoutUser = async () => {
-  const response = await apiClient.post(`auth/logout`);
+  const response = await apiClient.post("auth/logout");
   return response.data;
 };
 
@@ -29,7 +40,8 @@ export const getCurrUser = async (emailId: string | undefined) => {
 };
 
 export const refreshToken = async () => {
-  const response = await apiClient.post<LoginResponseData>(`/auth/refresh`);
+  const response = await refreshClient.post<LoginResponseData>("/auth/refresh");
+
   return response.data;
 };
 
@@ -39,7 +51,7 @@ export const deleteUser = async (userId: string) => {
 };
 
 export const forgotPassword = async (email: string) => {
-  const response = await apiClient.post(`auth/password/forgot`, {
+  const response = await apiClient.post("auth/password/forgot", {
     email,
   });
 
@@ -47,7 +59,7 @@ export const forgotPassword = async (email: string) => {
 };
 
 export const verifyOtp = async (email: string, otp: string) => {
-  const response = await apiClient.post<string>(`auth/password/verify-otp`, {
+  const response = await apiClient.post<string>("auth/password/verify-otp", {
     email,
     otp,
   });
@@ -67,7 +79,7 @@ export const resetPassword = async (
   resetToken: string,
   newPassword: string,
 ) => {
-  const response = await apiClient.post(`auth/password/reset`, {
+  const response = await apiClient.post("auth/password/reset", {
     resetToken,
     newPassword,
   });
