@@ -22,8 +22,46 @@ Email/password login, JWT access tokens, refresh-token sessions, OAuth2 (Google 
 
 > AuthForge is designed as a reusable security foundation — not a one-off login page — intended to sit underneath future applications.
 
+## Screenshots
+
+<table>
+<tr>
+<td width="50%" align="center">
+
+**Login**
+
+<img src="./screenshots/login.png" alt="Login page" width="100%"/>
+
+</td>
+<td width="50%" align="center">
+
+**Sign Up**
+
+<img src="./screenshots/signup.png" alt="Sign up page" width="100%"/>
+
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+
+**Dashboard**
+
+<img src="./screenshots/dashboard.png" alt="Dashboard" width="100%"/>
+
+</td>
+<td width="50%" align="center">
+
+**Profile**
+
+<img src="./screenshots/profile.png" alt="Profile page" width="100%"/>
+
+</td>
+</tr>
+</table>
+
 ## Table of Contents
 
+- [Screenshots](#screenshots)
 - [Features](#features)
 - [Tech Stack](#technology-stack)
 - [Architecture](#architecture)
