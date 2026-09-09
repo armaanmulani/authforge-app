@@ -193,6 +193,8 @@ DB_URL=jdbc:mysql://localhost:3306/authforge
 DB_USERNAME=root
 DB_PASSWORD=your_password
 
+SPRING_PROFILES_ACTIVE=dev/prod
+
 JWT_SECRET=replace_with_a_long_random_secret
 JWT_ACCESS_TOKEN_EXPIRY=15m
 JWT_REFRESH_TOKEN_EXPIRY=7d
@@ -207,9 +209,11 @@ SMTP_PORT=587
 SMTP_USERNAME=your_email@gmail.com
 SMTP_PASSWORD=your_app_password
 
-CLOUDFLARE_R2_BUCKET=authforge-profile-images
-CLOUDFLARE_R2_ACCESS_KEY=...
-CLOUDFLARE_R2_SECRET_KEY=...
+R2_ACCESS_KEY=your_r2_bucket_access_key
+R2_ACCOUNT_ID=your_r2_account_id
+R2_BUCKET_NAME=authforge-images
+R2_PUBLIC_URL=your_r2_bucket_public_url
+R2_SECRET_KEY=your_r2_bucket_secrey_key
 ```
 ```bash
 ./mvnw spring-boot:run
